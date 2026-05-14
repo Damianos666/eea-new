@@ -82,10 +82,10 @@ export function AdminSchedule({ token, refreshKey }) {
 
   // Predefiniowane kolory paska — null = automatyczny (z grupy szkoleń)
   const BAR_COLORS = [
-    { value: null,      label: "Auto",             bg: "#E0E0E0", dot: null },
-    { value: "#E74C3C", label: "Pilne / Choroba",  bg: "#E74C3C", dot: "🔴" },
-    { value: "#E67E22", label: "Informacja",        bg: "#E67E22", dot: "🟠" },
-    { value: "#7F8C8D", label: "Inne (np. opon.)", bg: "#7F8C8D", dot: "⬜" },
+    { value: null,      label: "Auto",             bg: "#E0E0E0" },
+    { value: "#2980B9", label: "Choroba",           bg: "#2980B9" },
+    { value: "#95A5A6", label: "Informacja",        bg: "#95A5A6" },
+    { value: "#F1C40F", label: "Inne (np. opon.)", bg: "#F1C40F" },
   ];
 
   // ── Nieskończony timeline ──
