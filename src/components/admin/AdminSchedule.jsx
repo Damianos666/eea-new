@@ -78,6 +78,15 @@ export function AdminSchedule({ token, refreshKey }) {
   const [isOutgoing,   setIsOutgoing]   = useState(false);
   const [notes,        setNotes]        = useState("");
   const [partCount,    setPartCount]    = useState("");
+  const [barColor,     setBarColor]     = useState(null); // null = auto (kolor grupy)
+
+  // Predefiniowane kolory paska — null = automatyczny (z grupy szkoleń)
+  const BAR_COLORS = [
+    { value: null,      label: "Auto",             bg: "#E0E0E0", dot: null },
+    { value: "#E74C3C", label: "Pilne / Choroba",  bg: "#E74C3C", dot: "🔴" },
+    { value: "#E67E22", label: "Informacja",        bg: "#E67E22", dot: "🟠" },
+    { value: "#7F8C8D", label: "Inne (np. opon.)", bg: "#7F8C8D", dot: "⬜" },
+  ];
 
   // ── Nieskończony timeline ──
   // Zamiast jednego miesiąca, renderujemy ciągłą wstążkę wielu miesięcy.
@@ -261,7 +270,7 @@ export function AdminSchedule({ token, refreshKey }) {
     setSelGroup(firstGroup);
     setSelTraining(TRAININGS.find(t=>t.group===firstGroup)?.id || TRAININGS[0].id);
     setStName(""); setStDays(2);
-    setIsHidden(false); setIsOutgoing(false); setNotes(""); setPartCount("");
+    setIsHidden(false); setIsOutgoing(false); setNotes(""); setPartCount(""); setBarColor(null);
   }
 
   function openNewForm(date, trainerId) {
@@ -284,6 +293,7 @@ export function AdminSchedule({ token, refreshKey }) {
     setIsOutgoing(entry.is_outgoing || false);
     setNotes(entry.notes || "");
     setPartCount(entry.participants_count != null ? String(entry.participants_count) : "");
+    setBarColor(entry.bar_color || null);
     setMsg(null);
     setTimeout(() => window.scrollTo?.({top:9999,behavior:"smooth"}), 60);
   }
@@ -381,6 +391,7 @@ export function AdminSchedule({ token, refreshKey }) {
         is_outgoing: isOutgoing,
         notes: notes.trim(),
         participants_count: partCount !== "" ? parseInt(partCount) : null,
+        bar_color: barColor || null,
       };
       await db.insert(token, "scheduled_trainings", payload);
       setMsg({ok:true,text:"✓ Dodano szkolenie do planu!"});
@@ -406,6 +417,7 @@ export function AdminSchedule({ token, refreshKey }) {
         is_outgoing: isOutgoing,
         notes: notes.trim(),
         participants_count: partVal,
+        bar_color: barColor || null,
       };
       const result = await db.update(token, "scheduled_trainings", `id=eq.${editingId}`, payload);
       if (Array.isArray(result) && result.length === 0) {
@@ -417,6 +429,7 @@ export function AdminSchedule({ token, refreshKey }) {
         participants_count: partVal,
         is_hidden: isHidden,
         is_outgoing: isOutgoing,
+        bar_color: barColor || null,
       } : x));
       setSaving(false);
       closeForm();
@@ -485,7 +498,7 @@ export function AdminSchedule({ token, refreshKey }) {
         id: "__preview__", date: selDate, end_date: previewEndDate,
         training_id: isST ? "ST" : selTraining, trainer_id: selTrainer,
         custom_name: isST ? (stName||"ST") : null,
-        __preview: true, __color: isST ? "#8E44AD" : (grp?.color || "#2980B9"),
+        __preview: true, __color: barColor || (isST ? "#8E44AD" : (grp?.color || "#2980B9")),
         __title: isST ? (stName||"ST") : (training?.short||"?"), status: "active",
       });
     }
@@ -501,7 +514,7 @@ export function AdminSchedule({ token, refreshKey }) {
           date: selDate, end_date: previewEndDate,
           training_id: isST ? "ST" : selTraining, trainer_id: selTrainer,
           custom_name: isST ? (stName||"ST") : null,
-          __color: isST ? "#8E44AD" : (grp?.color || "#2980B9"),
+          __color: barColor || (isST ? "#8E44AD" : (grp?.color || "#2980B9")),
           __title: isST ? (stName||"ST") : (training?.short||"?"),
         };
       }
@@ -516,7 +529,7 @@ export function AdminSchedule({ token, refreshKey }) {
           const isST      = s.training_id === "ST";
           const training  = isST ? null : TRAININGS.find(t => t.id === s.training_id);
           const grp       = GROUPS.find(g => g.id === training?.group);
-          const baseColor = s.__color || (isST ? "#8E44AD" : (grp?.color || "#2980B9"));
+          const baseColor = s.__color || s.bar_color || (isST ? "#8E44AD" : (grp?.color || "#2980B9"));
           const isPlanned = (s.status || "active") === "planned";
           const color     = isPlanned ? "#BBBBBB" : baseColor;
           const title     = s.__title || (isST ? (s.custom_name||"ST") : (training?.short || s.training_id));
@@ -531,7 +544,7 @@ export function AdminSchedule({ token, refreshKey }) {
         .filter(Boolean);
       return { trainerId, bars };
     });
-  }, [scheduled, months, cellW, formMode, editingId, selDate, selTraining, trainingMode, stName, previewEndDate, selTrainer]);
+  }, [scheduled, months, cellW, formMode, editingId, selDate, selTraining, trainingMode, stName, previewEndDate, selTrainer, barColor]);
 
   // ── Oblicza zakresy tygodni do wyświetlenia w nagłówku ──
   const weekSpans = useMemo(() => {
@@ -917,6 +930,31 @@ export function AdminSchedule({ token, refreshKey }) {
             />
             {/* prawa strona */}
             <div style={{flex:1}}/>
+            {/* Kolor paska — 4 kółka: Auto + 3 kolory */}
+            <div style={{display:"flex",gap:5,alignItems:"center",marginRight:4}} title="Kolor paska">
+              {BAR_COLORS.map(bc => {
+                const isSelected = barColor === bc.value;
+                return (
+                  <button
+                    key={String(bc.value)}
+                    onClick={() => setBarColor(bc.value)}
+                    title={bc.label}
+                    style={{
+                      width: 22, height: 22, borderRadius: "50%",
+                      background: bc.bg,
+                      border: isSelected ? "2.5px solid #222" : "1.5px solid rgba(0,0,0,.18)",
+                      cursor: "pointer", flexShrink: 0, padding: 0,
+                      boxShadow: isSelected ? "0 0 0 1.5px #fff inset" : "none",
+                      transition: "border .12s, box-shadow .12s",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 9, fontWeight: 700,
+                      color: bc.value ? "#fff" : C.greyDk,
+                    }}>
+                    {bc.value ? "" : "A"}
+                  </button>
+                );
+              })}
+            </div>
             <button onClick={closeForm}
               style={{padding:"7px 14px",fontSize:12,fontWeight:600,background:C.white,color:C.greyDk,border:`1px solid ${C.grey}`,borderRadius:6,cursor:"pointer",whiteSpace:"nowrap"}}>
               Anuluj
@@ -996,7 +1034,7 @@ export function AdminSchedule({ token, refreshKey }) {
             const isST = s.training_id === "ST";
             const t = isST ? null : TRAININGS.find(x=>x.id===s.training_id);
             const grp = GROUPS.find(g=>g.id===t?.group);
-            const barColor = isST ? "#8E44AD" : (grp?.color || C.grey);
+            const barColor = s.bar_color || (isST ? "#8E44AD" : (grp?.color || C.grey));
             const isPlanned = (s.status||"active") === "planned";
             return (
               <div key={s.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:`1px solid ${C.grey}`,opacity:isPlanned?0.6:1}}>
