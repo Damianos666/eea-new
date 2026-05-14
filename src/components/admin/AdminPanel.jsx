@@ -68,6 +68,7 @@ export function AdminPanel({ user, onLogout }) {
   const [registrationsCount, setRegistrationsCount] = useState(0);
   const [settlementsCount,   setSettlementsCount]   = useState(0);
   const [scheduleRefreshKey,     setScheduleRefreshKey]     = useState(0);
+  const [clientViewRefreshKey,   setClientViewRefreshKey]   = useState(0);
   const [interestedRefreshKey,   setInterestedRefreshKey]   = useState(0);
   const [registrationsRefreshKey,setRegistrationsRefreshKey] = useState(0);
   const prevTabRef = useRef(null);
@@ -78,6 +79,7 @@ export function AdminPanel({ user, onLogout }) {
   function setTab(newTab) {
     const prev = prevTabRef.current;
     if (newTab === 0 && prev !== 0) setScheduleRefreshKey(k => k + 1);
+    if (newTab === 1 && prev !== 1) setClientViewRefreshKey(k => k + 1);
     if (newTab === 5 && prev !== 5) setInterestedRefreshKey(k => k + 1);
     if (newTab === 6 && prev !== 6) setRegistrationsRefreshKey(k => k + 1);
     if (newTab === 7 && prev !== 7) setSettlementsCount(0);
@@ -132,6 +134,7 @@ export function AdminPanel({ user, onLogout }) {
     setScheduleView(prev => {
       const next = prev === "admin" ? "client" : "admin";
       try { localStorage.setItem(STORAGE_KEY_SCHEDULE_VIEW, next); } catch {}
+      if (next === "client") setClientViewRefreshKey(k => k + 1);
       return next;
     });
   }
@@ -548,7 +551,7 @@ export function AdminPanel({ user, onLogout }) {
               {visited[0] && <Suspense fallback={<Spinner/>}><AdminSchedule token={token} refreshKey={scheduleRefreshKey}/></Suspense>}
             </div>
             <div style={tab === 1 ? tabVisible : tabHidden}>
-              {visited[1] && <Suspense fallback={<Spinner/>}><ScheduleTab activeGroups={ALL_GROUPS}/></Suspense>}
+              {visited[1] && <Suspense fallback={<Spinner/>}><ScheduleTab activeGroups={ALL_GROUPS} refreshKey={clientViewRefreshKey}/></Suspense>}
             </div>
             <div style={tab === 2 ? tabVisible : tabHidden}>
               {visited[2] && <Suspense fallback={<Spinner/>}><AdminMessages token={token}/></Suspense>}
@@ -575,7 +578,7 @@ export function AdminPanel({ user, onLogout }) {
         <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", touchAction: "pan-y" }}>
           <div style={tab === 0 ? tabVisible : tabHidden}>
             {visited[0] && (scheduleView === "client"
-              ? <Suspense fallback={<Spinner/>}><ScheduleTab activeGroups={ALL_GROUPS}/></Suspense>
+              ? <Suspense fallback={<Spinner/>}><ScheduleTab activeGroups={ALL_GROUPS} refreshKey={clientViewRefreshKey}/></Suspense>
               : <Suspense fallback={<Spinner/>}><AdminSchedule token={token} refreshKey={scheduleRefreshKey}/></Suspense>
             )}
           </div>
