@@ -290,7 +290,8 @@ export function TrainerScheduleTab({ trainerNum }) {
           const training  = isST ? null : TRAININGS.find(t => t.id === s.training_id);
           const grp       = GROUPS.find(g => g.id === training?.group);
           const isPlanned = (s.status || "active") === "planned";
-          const color     = isPlanned ? "#BBBBBB" : (isST ? "#8E44AD" : (grp?.color || "#2980B9"));
+          const baseColor = s.bar_color || (isST ? "#8E44AD" : (grp?.color || "#2980B9"));
+          const color     = isPlanned ? "#BBBBBB" : baseColor;
           const title     = isST ? (s.custom_name || "ST") : (training?.short || s.training_id);
 
           const cs    = startISO < firstISO ? firstISO : startISO;
@@ -418,7 +419,7 @@ export function TrainerScheduleTab({ trainerNum }) {
             const isST      = s.training_id==="ST";
             const t         = isST?null:TRAININGS.find(x=>x.id===s.training_id);
             const grp       = GROUPS.find(g=>g.id===t?.group);
-            const barColor  = isST?"#8E44AD":(grp?.color||C.grey);
+            const barColor  = s.bar_color || (isST ? "#8E44AD" : (grp?.color || C.grey));
             const isPlanned = (s.status||"active")==="planned";
             return (
               <div key={s.id}
