@@ -904,9 +904,8 @@ export function AdminSchedule({ token, refreshKey }) {
             />
           </div>
 
-          {/* WIERSZ 1: 🔒 ✈️ + liczba uczest. (lewa) | Anuluj + Zapisz (prawa) */}
+          {/* WIERSZ 1: 🔒 ✈️ 👥 + kolory */}
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            {/* lewa strona */}
             <label style={{display:"flex",alignItems:"center",gap:4,cursor:"pointer"}}
               title="Ukryte — niewidoczne dla klientów">
               <input type="checkbox" checked={isHidden}
@@ -928,10 +927,8 @@ export function AdminSchedule({ token, refreshKey }) {
               placeholder="—"
               style={{width:56,padding:"6px 8px",border:`1.5px solid ${C.grey}`,borderRadius:6,fontSize:14,fontWeight:700,color:C.black,background:C.white,textAlign:"center",outline:"none"}}
             />
-            {/* prawa strona */}
             <div style={{flex:1}}/>
-            {/* Kolor paska — 4 kółka: Auto + 3 kolory */}
-            <div style={{display:"flex",gap:5,alignItems:"center",marginRight:4}} title="Kolor paska">
+            <div style={{display:"flex",gap:5,alignItems:"center"}} title="Kolor paska">
               {BAR_COLORS.map(bc => {
                 const isSelected = barColor === bc.value;
                 return (
@@ -955,23 +952,26 @@ export function AdminSchedule({ token, refreshKey }) {
                 );
               })}
             </div>
+          </div>
+
+          {/* WIERSZ 2: Anuluj + Zapisz/Dodaj */}
+          <div style={{display:"flex",gap:8}}>
             <button onClick={closeForm}
-              style={{padding:"7px 14px",fontSize:12,fontWeight:600,background:C.white,color:C.greyDk,border:`1px solid ${C.grey}`,borderRadius:6,cursor:"pointer",whiteSpace:"nowrap"}}>
+              style={{flex:1,padding:"11px 0",fontSize:13,fontWeight:600,background:C.white,color:C.greyDk,border:`1px solid ${C.grey}`,borderRadius:6,cursor:"pointer"}}>
               Anuluj
             </button>
             {formMode === "new" ? (
               <button onClick={addEntry} disabled={saving}
-                style={{padding:"7px 16px",fontSize:12,fontWeight:700,background:saving?C.greyDk:C.black,color:C.white,border:"none",borderRadius:6,cursor:saving?"not-allowed":"pointer",whiteSpace:"nowrap"}}>
+                style={{flex:1,padding:"11px 0",fontSize:13,fontWeight:700,background:saving?C.greyDk:C.black,color:C.white,border:"none",borderRadius:6,cursor:saving?"not-allowed":"pointer"}}>
                 {saving ? "…" : "✓ Dodaj"}
               </button>
             ) : (
               <button onClick={updateEntry} disabled={saving}
-                style={{padding:"7px 16px",fontSize:12,fontWeight:700,background:saving?C.greyDk:C.greenDk,color:C.white,border:"none",borderRadius:6,cursor:saving?"not-allowed":"pointer",whiteSpace:"nowrap"}}>
+                style={{flex:1,padding:"11px 0",fontSize:13,fontWeight:700,background:saving?C.greyDk:C.greenDk,color:C.white,border:"none",borderRadius:6,cursor:saving?"not-allowed":"pointer"}}>
                 {saving ? "…" : "✓ Zapisz"}
               </button>
             )}
           </div>
-
           {/* WIERSZ 2: Usuń — tylko w trybie edycji, wyrównany do prawej */}
           {formMode === "edit" && (
             <div style={{display:"flex",justifyContent:"flex-end"}}>
