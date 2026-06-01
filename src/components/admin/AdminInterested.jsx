@@ -545,7 +545,7 @@ export function AdminInterested({ token, onContactedChange, refreshKey }) {
                             }).catch(() => {});
                           }}
                           id={"avatar-" + item.id}
-                          title=T.adm_int_copy
+                          title={T.adm_int_copy}
                           style={{
                             width:36,height:36,borderRadius:"50%",flexShrink:0,
                             background: isWithdrawn ? "#FDEBD0" : isContacted ? C.greenBg : C.greyBg,
@@ -659,7 +659,7 @@ export function AdminInterested({ token, onContactedChange, refreshKey }) {
                           <button
                             onClick={() => deleteItem(item)}
                             disabled={deletingId === item.id}
-                            title=T.adm_int_delete
+                            title={T.adm_int_delete}
                             style={{
                               padding:"4px 8px",
                               fontSize:10,
