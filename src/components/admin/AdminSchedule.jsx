@@ -930,7 +930,7 @@ export function AdminSchedule({ token, refreshKey }) {
               style={{width:56,padding:"6px 8px",border:`1.5px solid ${C.grey}`,borderRadius:6,fontSize:14,fontWeight:700,color:C.black,background:C.white,textAlign:"center",outline:"none"}}
             />
             <div style={{flex:1}}/>
-            <div style={{display:"flex",gap:5,alignItems:"center"}} title=T.adm_sch_bar_color>
+            <div style={{display:"flex",gap:5,alignItems:"center"}} title={T.adm_sch_bar_color}>
               {BAR_COLORS.map(bc => {
                 const isSelected = barColor === bc.value;
                 return (
