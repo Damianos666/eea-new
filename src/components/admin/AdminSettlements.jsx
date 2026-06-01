@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ADMIN SETTLEMENTS — Zakładka T.adm_set_title
+// ADMIN SETTLEMENTS
 // Lista raportów serwisowych z filtrami + generowanie PDF na żądanie
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -25,21 +25,7 @@ function fmtDatetime(iso) {
   return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
-const TRAINER_OPTIONS = [
-  { value: "", label: T.adm_set_all_trainers },
-  ...Object.entries(TRAINERS).map(([id, name]) => ({ value: id, label: name })),
-];
-
-const STATUS_OPTIONS = [
-  { value: "",         label: T.adm_set_all_status },
-  { value: "signed",   label: T.adm_set_signed },
-  { value: "archived", label: "Zarchiwizowany" },
-];
-
-const STATUS_LABEL = {
-  signed:   { text: T.adm_set_signed,      bg: "#EBF5FB", color: C.blue },
-  archived: { text: "Zarchiwizowany", bg: C.greyBg,  color: C.greyDk },
-};
+const TRAINER_OPTIONS_BASE = Object.entries(TRAINERS).map(([id, name]) => ({ value: id, label: name }));
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const inp = (ex = {}) => ({
@@ -56,6 +42,19 @@ const btn = (ex = {}) => ({
 // ─── Główny komponent ─────────────────────────────────────────────────────────
 export function AdminSettlements({ token }) {
   const { T } = useLang();
+  const TRAINER_OPTIONS = [
+    { value: "", label: T.adm_set_all_trainers },
+    ...TRAINER_OPTIONS_BASE,
+  ];
+  const STATUS_OPTIONS = [
+    { value: "",         label: T.adm_set_all_status },
+    { value: "signed",   label: T.adm_set_signed },
+    { value: "archived", label: "Archived" },
+  ];
+  const STATUS_LABEL = {
+    signed:   { text: T.adm_set_signed,  bg: "#EBF5FB", color: C.blue },
+    archived: { text: "Archived", bg: C.greyBg,  color: C.greyDk },
+  };
   const [reports,       setReports]       = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [err,           setErr]           = useState("");
