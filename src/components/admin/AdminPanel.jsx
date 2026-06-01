@@ -22,7 +22,7 @@ const ScheduleTab        = lazy(() => import("../ScheduleTab").then(m => ({ defa
 const LOGO_URL = "/logo.png";
 const ALL_GROUPS = GROUPS.map(g => g.id);
 
-// Desktop: wszystkie zakładki w sidebarze
+// Tab arrays moved inside component (need T hook)
 const ADMIN_TABS = [
   T.adm_tab_schedule,
   T.adm_client_view,
@@ -65,6 +65,24 @@ function useIsDesktop() {
 
 export function AdminPanel({ user, onLogout }) {
   const { T } = useLang();
+  const ADMIN_TABS = [
+    T.adm_tab_schedule,
+    T.adm_client_view,
+    T.adm_tab_messages,
+    T.adm_tab_trainings,
+    T.adm_tab_users,
+    T.adm_tab_reports,
+    T.adm_tab_registrations,
+    T.adm_tab_settlements,
+  ];
+  const MOBILE_TABS = [
+    [T.adm_tab_schedule,      0],
+    [T.adm_tab_messages,      2],
+    [T.adm_tab_users,         4],
+    [T.adm_tab_reports,       5],
+    [T.adm_tab_registrations, 6],
+    [T.adm_tab_settlements,   7],
+  ];
   const [tab,                setTabRaw]            = useState(0);
   const [interestedCount,    setInterestedCount]   = useState(0);
   const [registrationsCount, setRegistrationsCount] = useState(0);
