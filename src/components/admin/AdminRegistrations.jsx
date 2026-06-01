@@ -419,7 +419,7 @@ function RegCard({ item, token, onUpdate, onDelete }) {
         {/* 📄 PDF */}
         <button
           onClick={() => generateRegistrationPDF(item)}
-          title=T.adm_reg_gen_pdf
+          title={T.adm_reg_gen_pdf}
           style={{
             display: "inline-flex", alignItems: "center", gap: 5,
             padding: "7px 12px", fontSize: 11, fontWeight: 700,
