@@ -297,7 +297,7 @@ export function AdminSettlements({ token }) {
                             opacity:    isDel ? 0.5 : 1,
                             minWidth:   90,
                           })}
-                          title=T.adm_set_download
+                          title={T.adm_set_download}
                         >
                           {isGen ? "⏳ PDF…" : "📥 PDF"}
                         </button>
