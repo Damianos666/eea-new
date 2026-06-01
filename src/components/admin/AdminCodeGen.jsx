@@ -168,7 +168,7 @@ export function AdminCodeGen({ defaultTrainer }) {
             📅 {today} · 👤 {TRAINERS[selTrainer]}{mode === "special" ? ` · 📆 ${specialDays} ${specialDays === 1 ? "dzień" : "dni"}` : ""}
           </div>
 
-          <img src={qrDataUrl} alt=T.adm_code_title
+          <img src={qrDataUrl} alt={T.adm_code_title}
             style={{ width: 280, height: 280, display: "block", margin: "0 auto 20px", imageRendering: "pixelated" }}/>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
