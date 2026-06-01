@@ -27,7 +27,8 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-lMjtbKUdVbT813EUgDSzMxNQq+EHzy7gVrJYbwbgeFE=' 'sha256-FwZwVuoH+MfH3wwrdPPIq6KDBlQqVT2Zs65RX0biRMo=' 'sha256-izCML1MTAMw1nRnD/6ssL9ihiJR4qkjCKG4R+C1wT3s=' 'wasm-unsafe-eval' },
+          "value": "default-src 'self'; script-src 'self' 'sha256-lMjtbKUdVbT813EUgDSzMxNQq+EHzy7gVrJYbwbgeFE=' 'sha256-FwZwVuoH+MfH3wwrdPPIq6KDBlQqVT2Zs65RX0biRMo=' 'sha256-izCML1MTAMw1nRnD/6ssL9ihiJR4qkjCKG4R+C1wT3s=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://date.nager.at; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';"
+        },
         {
           "key": "X-Frame-Options",
           "value": "DENY"
