@@ -107,7 +107,7 @@ function generateRegistrationPDF(item) {
     </div>
     <div class="meta">
       Zgłoszono: ${created}<br/>
-      <span class="badge">${item.is_handled ? T.adm_reg_handled : "Oczekuje"}</span>
+      <span class="badge">${item.is_handled ? "Handled" : "Pending"}</span>
     </div>
   </div>
 
@@ -184,6 +184,7 @@ function generateRegistrationPDF(item) {
 
 /* ─── Single registration card ─────────────────────────────────────────── */
 function RegCard({ item, token, onUpdate, onDelete }) {
+  const { T } = useLang();
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesVal,     setNotesVal]     = useState(item.admin_notes || "");
   const [saving,       setSaving]       = useState(false);
