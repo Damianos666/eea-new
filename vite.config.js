@@ -72,8 +72,61 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            'react-vendor':   ['react', 'react-dom'],
-            'react-pdf':      ['@react-pdf/renderer'],
+            // ── Vendor ──────────────────────────────────────────────────────
+            // React core — wspólne dla wszystkich ról, cache'owane długoterminowo.
+            'react-vendor': ['react', 'react-dom'],
+
+            // @react-pdf/renderer (~350 KB gzip) — osobny chunk, ładowany
+            // tylko gdy trener/admin generuje PDF. Bez tego trafiałby
+            // do każdego bundla i blokował start aplikacji.
+            'react-pdf': ['@react-pdf/renderer'],
+
+            // ── Trener ──────────────────────────────────────────────────────
+            // Formularze raportów i delegacji + ich generatory PDF
+            // (~190 KB). Pobierane dopiero przy pierwszym otwarciu formularza
+            // (lazy import w TrainerScheduleTab.jsx).
+            'trainer-forms': [
+              './src/components/ServiceReportForm',
+              './src/components/DelegationForm',
+              './src/lib/serviceReportPdfGenerator',
+              './src/lib/delegationPdfGenerator',
+              './src/config/serviceReportConfig',
+            ],
+
+            // ── Admin ────────────────────────────────────────────────────────
+            // Panel admina — shell + lżejsze zakładki (~130 KB).
+            // Klient i trener nigdy tego nie pobierają.
+            'admin-core': [
+              './src/components/admin/AdminPanel',
+              './src/components/admin/AdminMessages',
+              './src/components/admin/AdminTrainings',
+              './src/components/admin/AdminCodeGen',
+              './src/components/admin/AdminQuiz',
+            ],
+
+            // Ciężkie zakładki admina (~150 KB) — wydzielone osobno,
+            // bo są ładowane lazy (mount-on-first-visit) i nie są potrzebne
+            // przy pierwszym wejściu w panel.
+            'admin-heavy': [
+              './src/components/admin/AdminBatchComplete',
+              './src/components/admin/AdminUsers',
+              './src/components/admin/AdminSchedule',
+              './src/components/admin/AdminInterested',
+              './src/components/admin/AdminRegistrations',
+              './src/components/admin/AdminSettlements',
+            ],
+
+            // ── Klient ───────────────────────────────────────────────────────
+            // Zakładki klienta — ładowane od razu po logowaniu.
+            // Wydzielone by nie mieszały się z kodem admina/trenera.
+            'client-tabs': [
+              './src/components/TrainingTab',
+              './src/components/CatalogTab',
+              './src/components/ScheduleTab',
+              './src/components/MessagesTab',
+              './src/components/ProfileTab',
+              './src/components/TabBar',
+            ],
           },
         },
       },
