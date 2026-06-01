@@ -70,12 +70,12 @@ export function AdminMessages({ token }) {
             <div>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.greyDk,marginBottom:5,letterSpacing:.5}}>TYTUŁ *</label>
               <input style={{width:"100%",border:`1.5px solid ${C.grey}`,padding:"9px 12px",fontSize:14,color:C.black,outline:"none",boxSizing:"border-box"}}
-                value={fTitle} onChange={e => setFTitle(e.target.value)} placeholder=T.adm_msg_title_ph/>
+                value={fTitle} onChange={e => setFTitle(e.target.value)} placeholder={T.adm_msg_title_ph}/>
             </div>
             <div>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.greyDk,marginBottom:5,letterSpacing:.5}}>TREŚĆ *</label>
               <textarea style={{width:"100%",border:`1.5px solid ${C.grey}`,padding:"9px 12px",fontSize:13,color:C.black,outline:"none",boxSizing:"border-box",minHeight:90,resize:"vertical",fontFamily:"inherit"}}
-                value={fBody} onChange={e => setFBody(e.target.value)} placeholder=T.adm_msg_body_ph/>
+                value={fBody} onChange={e => setFBody(e.target.value)} placeholder={T.adm_msg_body_ph}/>
             </div>
             <div>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.greyDk,marginBottom:8,letterSpacing:.5}}>TYP</label>
