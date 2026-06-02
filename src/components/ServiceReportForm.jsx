@@ -351,6 +351,10 @@ export function ServiceReportForm({ entry, trainerNum, onClose }) {
   const [signaturePad, setSignaturePad] = useState(null);
   const [clientSig, setClientSig] = useState(cachedSigs?.clientSig || null);
   const [technicianSig, setTechnicianSig] = useState(cachedSigs?.technicianSig || null);
+  const [nearbyList, setNearbyList] = useState([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyErr, setNearbyErr] = useState("");
+  const [showNearby, setShowNearby] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
   const [syncStatus, setSyncStatus] = useState(() => {
@@ -409,6 +413,54 @@ export function ServiceReportForm({ entry, trainerNum, onClose }) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { saveReportData(trainerNum, entryDate, { clientName, clientAddress, clientCity, signerName, rows, workDescription, clientNotes, signatureDate }); }, [trainerNum, entryDate, clientName, clientAddress, clientCity, signerName, rows, workDescription, clientNotes, signatureDate]);
   useEffect(() => { saveSignatures(trainerNum, entryDate, { clientSig, technicianSig }); }, [trainerNum, entryDate, clientSig, technicianSig]);
+
+  async function fetchNearbyCompanies() {
+    setNearbyErr(""); setShowNearby(false); setNearbyLoading(true);
+    try {
+      const pos = await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
+      );
+      const { latitude: lat, longitude: lng } = pos.coords;
+      const apiKey = import.meta.env.VITE_GOOGLE_PLACES_KEY;
+      if (!apiKey) throw new Error("Dodaj VITE_GOOGLE_PLACES_KEY do .env.local");
+      const res = await fetch("https://places.googleapis.com/v1/places:searchNearby", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.location",
+        },
+        body: JSON.stringify({
+          locationRestriction: { circle: { center: { latitude: lat, longitude: lng }, radiusMeters: 3000 } },
+          includedTypes: ["establishment"],
+          maxResultCount: 5,
+          rankPreference: "DISTANCE",
+        }),
+      });
+      if (!res.ok) throw new Error(`Places API błąd: ${res.status}`);
+      const data = await res.json();
+      const places = (data.places || []).slice(0, 3).map(p => {
+        const parts = (p.formattedAddress || "").split(",").map(s => s.trim());
+        const address = parts[0] || "";
+        const city = parts.slice(1, parts.length - 1).join(", ");
+        const dLat = (p.location?.latitude - lat) * 111000;
+        const dLng = (p.location?.longitude - lng) * 111000 * Math.cos(lat * Math.PI / 180);
+        const distance = p.location ? Math.round(Math.sqrt(dLat * dLat + dLng * dLng)) : null;
+        return { name: p.displayName?.text || "", address, city, distance };
+      });
+      setNearbyList(places); setShowNearby(true);
+    } catch (e) {
+      if (e.code === 1) setNearbyErr("Brak zgody na lokalizację — zezwól w przeglądarce.");
+      else if (e.code === 2) setNearbyErr("Nie można ustalić lokalizacji GPS.");
+      else setNearbyErr(e.message || "Błąd pobierania firm.");
+    } finally { setNearbyLoading(false); }
+  }
+  function pickCompany(place) {
+    setClientName(place.name);
+    setClientAddress(place.address);
+    setClientCity(place.city);
+    setShowNearby(false); setNearbyErr("");
+  }
 
   function updateRow(idx, field, val) {
     setRows(prev => {
@@ -564,7 +616,31 @@ if (val === "full" && changed.depFrom && changed.depTo) {
                   <div style={lockedFieldsStyle}>
                     <div style={{ background:C.white, borderRadius:10, padding:14, marginBottom:12, border:`1px solid ${C.grey}` }}>
                       <div style={secTitle()}>{"🏭 Dane klienta"}</div>
-                      <div style={{ marginBottom:10 }}><span style={lbl()}>{"Nazwa firmy *"}</span><input value={clientName} onChange={e=>setClientName(e.target.value)} placeholder="np. HORIZONT ROLOS Sp. z o.o." style={inp()} /></div>
+                      <div style={{ marginBottom:10 }}>
+                        <span style={lbl()}>{"Nazwa firmy *"}</span>
+                        <div style={{ position:"relative" }}>
+                          <div style={{ display:"flex", gap:6 }}>
+                            <input value={clientName} onChange={e=>{ setClientName(e.target.value); setShowNearby(false); }} placeholder="np. HORIZONT ROLOS Sp. z o.o." style={{ ...inp(), flex:1 }} />
+                            <button onClick={fetchNearbyCompanies} disabled={nearbyLoading} title="Znajdź pobliskie firmy" style={{ flexShrink:0, width:42, background:nearbyLoading?"#EBF5FB":C.blue, color:"#fff", border:"none", borderRadius:6, fontSize:17, cursor:nearbyLoading?"default":"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                              {nearbyLoading ? "⏳" : "📍"}
+                            </button>
+                          </div>
+                          {nearbyErr && <div style={{ fontSize:11, color:C.red, marginTop:4, paddingLeft:2 }}>⚠️ {nearbyErr}</div>}
+                          {showNearby && nearbyList.length > 0 && (
+                            <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:200, background:C.white, border:`1.5px solid ${C.blue}`, borderRadius:8, boxShadow:"0 4px 20px rgba(0,0,0,0.13)", overflow:"hidden", marginTop:4 }}>
+                              <div style={{ padding:"7px 12px", background:"#EBF5FB", borderBottom:`1px solid ${C.grey}`, fontSize:11, fontWeight:700, color:"#1A5276" }}>📍 3 najbliższe firmy</div>
+                              {nearbyList.map((place, i) => (
+                                <button key={i} onClick={()=>pickCompany(place)} style={{ width:"100%", padding:"9px 12px", background:i%2===0?C.white:"#FAFAFA", border:"none", borderBottom:i<nearbyList.length-1?`1px solid ${C.grey}`:"none", textAlign:"left", cursor:"pointer", fontFamily:FONT, display:"block" }}>
+                                  <div style={{ fontSize:13, fontWeight:700, color:C.black }}>{place.name}</div>
+                                  <div style={{ fontSize:11, color:C.greyMid, marginTop:2 }}>{[place.address, place.city].filter(Boolean).join(", ")}</div>
+                                  {place.distance != null && <div style={{ fontSize:10, color:C.blue, marginTop:2, fontWeight:600 }}>~ {place.distance} m od Ciebie</div>}
+                                </button>
+                              ))}
+                              <button onClick={()=>setShowNearby(false)} style={{ width:"100%", padding:"7px 12px", background:C.greyBg, border:"none", borderTop:`1px solid ${C.grey}`, textAlign:"center", cursor:"pointer", fontFamily:FONT, fontSize:11, color:C.greyMid }}>Zamknij</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       <div style={{ marginBottom:10 }}><span style={lbl()}>Ulica i numer</span><input value={clientAddress} onChange={e=>setClientAddress(e.target.value)} placeholder="np. Henryka Sienkiewicza 2" style={inp()} /></div>
                       <div style={{ marginBottom:10 }}><span style={lbl()}>Kod pocztowy i miasto</span><input value={clientCity} onChange={e=>setClientCity(e.target.value)} placeholder="np. 07-200 Wyszków" style={inp()} /></div>
                       <div><span style={lbl()}>Osoba podpisująca</span><input value={signerName} onChange={e=>setSignerName(e.target.value)} placeholder="np. Jan Kowalski — Kierownik Produkcji" style={inp()} /></div>
