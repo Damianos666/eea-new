@@ -433,7 +433,7 @@ export function ServiceReportForm({ entry, trainerNum, onClose }) {
       if (!apiKey) return;
       const geo = await getGeo();
       const body = { input: query, includedPrimaryTypes: ["establishment"], languageCode: "pl" };
-      if (geo) body.locationBias = { circle: { center: { latitude: geo.lat, longitude: geo.lng }, radiusMeters: 50000 } };
+      if (geo) body.locationBias = { circle: { center: { latitude: geo.lat, longitude: geo.lng }, radius: 50000.0 } };
       const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey },
