@@ -354,6 +354,7 @@ export function ServiceReportForm({ entry, trainerNum, onClose }) {
   const [autoSuggs, setAutoSuggs] = useState([]);
   const [autoLoading, setAutoLoading] = useState(false);
   const [showAuto, setShowAuto] = useState(false);
+  const [autoErr, setAutoErr] = useState("");
   const autoTimerRef = useRef(null);
   const geoRef = useRef(null);
   const [saving, setSaving] = useState(false);
@@ -427,12 +428,12 @@ export function ServiceReportForm({ entry, trainerNum, onClose }) {
   }
   async function searchCompanies(query) {
     if (query.length < 2) { setAutoSuggs([]); setShowAuto(false); return; }
-    setAutoLoading(true);
+    setAutoLoading(true); setAutoErr("");
     try {
       const apiKey = import.meta.env.VITE_GOOGLE_PLACES_KEY;
-      if (!apiKey) return;
+      if (!apiKey) { setAutoErr("Brak klucza VITE_GOOGLE_PLACES_KEY"); return; }
       const geo = await getGeo();
-      const body = { input: query, includedPrimaryTypes: ["establishment"], languageCode: "pl" };
+      const body = { input: query, languageCode: "pl", regionCode: "pl" };
       if (geo) body.locationBias = { circle: { center: { latitude: geo.lat, longitude: geo.lng }, radius: 50000.0 } };
       const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
         method: "POST",
@@ -440,13 +441,19 @@ export function ServiceReportForm({ entry, trainerNum, onClose }) {
         body: JSON.stringify(body),
       });
       const data = await res.json();
+      if (!res.ok) {
+        const msg = data?.error?.message || `HTTP ${res.status}`;
+        setAutoErr(`Places API: ${msg}`);
+        return;
+      }
       const suggs = (data.suggestions || []).slice(0, 5).map(s => ({
         placeId: s.placePrediction?.placeId,
         name: s.placePrediction?.structuredFormat?.mainText?.text || "",
         secondary: s.placePrediction?.structuredFormat?.secondaryText?.text || "",
-      }));
+      })).filter(s => s.name);
       setAutoSuggs(suggs); setShowAuto(suggs.length > 0);
-    } catch (e) { console.warn("Autocomplete error:", e); }
+      if (suggs.length === 0) setAutoErr("Brak wyników — spróbuj innej nazwy.");
+    } catch (e) { setAutoErr("Błąd połączenia: " + (e.message || "nieznany")); }
     finally { setAutoLoading(false); }
   }
   async function pickSuggestion(sugg) {
@@ -629,6 +636,7 @@ if (val === "full" && changed.depFrom && changed.depTo) {
                             onChange={e => {
                               const val = e.target.value;
                               setClientName(val);
+                              setAutoErr("");
                               clearTimeout(autoTimerRef.current);
                               if (val.length >= 2) autoTimerRef.current = setTimeout(() => searchCompanies(val), 350);
                               else { setAutoSuggs([]); setShowAuto(false); }
@@ -639,6 +647,7 @@ if (val === "full" && changed.depFrom && changed.depTo) {
                             autoComplete="off"
                           />
                           {autoLoading && <div style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", fontSize:12, color:C.greyMid }}>⏳</div>}
+                          {autoErr && !showAuto && <div style={{ fontSize:11, color:C.red, marginTop:4, paddingLeft:2 }}>⚠️ {autoErr}</div>}
                           {showAuto && autoSuggs.length > 0 && (
                             <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:200, background:C.white, border:`1.5px solid ${C.blue}`, borderRadius:8, boxShadow:"0 4px 20px rgba(0,0,0,0.13)", overflow:"hidden", marginTop:3 }}>
                               {autoSuggs.map((s, i) => (
